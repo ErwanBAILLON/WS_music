@@ -1,8 +1,13 @@
 import express from 'express';
 require('dotenv').config();
+let cors = require('cors');
 
 const app: express.Application = express();
 const PORT: number = Number(process.env.PORT) || 3000;
+
+let sparqlRouter = require('./sparql/routes');
+app.use(sparqlRouter);
+app.use(cors());
 
 app.get('/', (req: express.Request, res: express.Response) => {
   res.send('Hello World!');
