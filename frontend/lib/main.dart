@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 void main() {
   runApp(const MyApp());
@@ -24,7 +26,7 @@ class LandingPage extends StatefulWidget {
 
 class _LandingPageState extends State<LandingPage> {
   TextEditingController _questionController = TextEditingController();
-  String _userInput = '';
+  String _sparqlResponse = '';
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +37,7 @@ class _LandingPageState extends State<LandingPage> {
       body: Container(
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('lib/assets/background.png'), // Remplacez 'assets/background_image.jpg' par le chemin de votre image
+            image: AssetImage('lib/assets/background.png'),
             fit: BoxFit.cover,
           ),
         ),
@@ -47,26 +49,34 @@ class _LandingPageState extends State<LandingPage> {
               TextField(
                 controller: _questionController,
                 decoration: const InputDecoration(
-                  labelText: 'Ask a question',
+                  labelText: 'Posez une question (nom de l\'artiste)',
                   fillColor: Colors.white,
                   filled: true,
                 ),
               ),
               const SizedBox(height: 20),
               ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    _userInput = _questionController.text;
-                  });
-                  // Vous pouvez utiliser _userInput comme vous le souhaitez ici
-                  // Par exemple, l'imprimer dans la console.
-                  print('Question asked : $_userInput');
+                onPressed: () async {
+                  String artistName = _questionController.text;
+                  // Vérifiez si l'utilisateur a saisi un nom d'artiste
+                  if (artistName.isNotEmpty) {
+                    // Construisez l'URL avec le paramètre artist
+                    Uri url = Uri.parse('http://localhost:3000/sparql');
+                    
+                    // Effectuez la requête GET
+                    http.Response response = await http.get(url);
+
+                    // Mettez à jour l'état avec la réponse de la requête
+                    setState(() {
+                      _sparqlResponse = response.body;
+                    });
+                  }
                 },
-                child: const Text('Ask a quetion'),
+                child: const Text('Poser la question'),
               ),
               const SizedBox(height: 20),
               Text(
-                'Question asked by the user : $_userInput',
+                'Réponse de la requête SPARQL : $_sparqlResponse',
                 style: const TextStyle(fontSize: 18),
               ),
             ],
