@@ -7,18 +7,19 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({Key? key});
 
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
+      debugShowCheckedModeBanner: false,
       home: LandingPage(),
     );
   }
 }
 
 class LandingPage extends StatefulWidget {
-  const LandingPage({super.key});
+  const LandingPage({Key? key});
 
   @override
   _LandingPageState createState() => _LandingPageState();
@@ -26,30 +27,71 @@ class LandingPage extends StatefulWidget {
 
 class _LandingPageState extends State<LandingPage> {
   TextEditingController _questionController = TextEditingController();
-  String _sparqlResponse = '';
+  Map<String, dynamic> _secondButtonResponse = {};
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Landing Page'),
+        title: const Text('Music Quiz'),
       ),
       body: Container(
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('lib/assets/background.png'),
+            image: AssetImage('lib/assets/background.png'), // Assurez-vous d'ajuster le chemin selon votre arborescence
             fit: BoxFit.cover,
           ),
         ),
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 20),
+            // Deuxième bouton vers le haut de la page
+            ElevatedButton(
+              onPressed: () async {
+                // Effectuez la requête GET
+                http.Response response = await http.get(Uri.parse('http://localhost:3000/sparql'));
+
+                // Convertissez la réponse en un objet Map
+                Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+
+                // Mettez à jour l'état avec la réponse de la requête
+                setState(() {
+                  _secondButtonResponse = jsonResponse;
+                });
+              },
+              child: const Text('Start Quiz !'),
+            ),
+            const SizedBox(height: 20),
+            if (_secondButtonResponse.isNotEmpty) ...[
+              Text(
+                'Artist: ${_secondButtonResponse["artist"]}',
+                style: const TextStyle(fontSize: 18),
+              ),
+              const Text(
+                'Songs:',
+                style: TextStyle(fontSize: 18),
+              ),
+              Text(
+                '- ${_secondButtonResponse["rightSong"]}',
+                style: const TextStyle(fontSize: 18),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: (_secondButtonResponse["wrongSongs"] as List<dynamic>?)?.map((wrongSong) {
+                  return Text(
+                    '- $wrongSong',
+                    style: const TextStyle(fontSize: 18),
+                  );
+                }).toList() ?? [],
+              ),
+              const SizedBox(height: 20),
               TextField(
                 controller: _questionController,
                 decoration: const InputDecoration(
-                  labelText: 'Posez une question (nom de l\'artiste)',
+                  labelText: 'Enter your Answer (Name of the song that belongs to the artist)',
                   fillColor: Colors.white,
                   filled: true,
                 ),
@@ -61,27 +103,51 @@ class _LandingPageState extends State<LandingPage> {
                   // Vérifiez si l'utilisateur a saisi un nom d'artiste
                   if (artistName.isNotEmpty) {
                     // Construisez l'URL avec le paramètre artist
-                    Uri url = Uri.parse('http://localhost:3000/sparql');
-                    
-                    // Effectuez la requête GET
-                    http.Response response = await http.get(url);
-
-                    // Mettez à jour l'état avec la réponse de la requête
-                    setState(() {
-                      _sparqlResponse = response.body;
-                    });
+                    if (artistName == _secondButtonResponse["rightSong"]) {
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            title: const Text('Correct !'),
+                            content: const Text('You are right !'),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                child: const Text('OK'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    } else {
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            title: const Text('Wrong !'),
+                            content: const Text('You are wrong !'),
+                            actions: [
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                child: const Text('OK'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    }
                   }
                 },
-                child: const Text('Poser la question'),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                'Réponse de la requête SPARQL : $_sparqlResponse',
-                style: const TextStyle(fontSize: 18),
+                child: const Text('Submit'),
               ),
             ],
-          ),
+          ],
         ),
+      ),
       ),
     );
   }
