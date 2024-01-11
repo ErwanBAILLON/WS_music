@@ -7,7 +7,14 @@ To launch the back and front ends, you need ``nodejs`` and ``flutter``.
 
 ### Backend
 
-To launch the backend, go to the ``backend`` folder and type this command
+To go to the ``backend`` folder and type this command.
+
+To install dependencies use this command:
+```
+npm i
+```
+
+To launch the backend:
 ```
 npm run build
 ```
@@ -18,7 +25,14 @@ npm run start
 
 ### Frontend
 
-To launch the Frontend, go to the ``frontend`` folder and type this command
+To go to the ``frontend`` folder and type this command.
+
+To install dependencies use this command:
+```
+flutter pub get
+```
+
+To launch the Frontend:
 
 ```
 flutter doctor
