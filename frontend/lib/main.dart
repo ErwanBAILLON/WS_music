@@ -67,7 +67,7 @@ class _LandingPageState extends State<LandingPage> {
             const SizedBox(height: 20),
             if (_secondButtonResponse.isNotEmpty) ...[
               Text(
-                'Artist: ${_secondButtonResponse["artist"]}',
+                'Which of the following songs was performed by ${_secondButtonResponse["artist"]}?',
                 style: const TextStyle(fontSize: 18),
               ),
               const Text(
